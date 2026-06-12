@@ -1,4 +1,34 @@
-//your JS code here.
+const questionsElement = document.getElementById("questions");
+const scoreElement = document.getElementById("score");
+
+// Load saved progress
+let userAnswers = JSON.parse(sessionStorage.getItem("progress")) || [];
+
+// Display saved score if available
+const savedScore = localStorage.getItem("score");
+if (savedScore !== null) {
+  scoreElement.textContent = `Your score is ${savedScore} out of 5.`;
+}
+
+// Save answer selection in sessionStorage
+function saveAnswer(questionIndex, answer) {
+  userAnswers[questionIndex] = answer;
+  sessionStorage.setItem("progress", JSON.stringify(userAnswers));
+}
+
+// Submit quiz
+document.getElementById("submit").addEventListener("click", () => {
+  let score = 0;
+
+  for (let i = 0; i < questions.length; i++) {
+    if (userAnswers[i] === questions[i].answer) {
+      score++;
+    }
+  }
+
+  scoreElement.textContent = `Your score is ${score} out of 5.`;
+  localStorage.setItem("score", score);
+});
 
 // Do not change code below this line
 // This code will just display the questions to the screen
@@ -35,22 +65,36 @@ function renderQuestions() {
   for (let i = 0; i < questions.length; i++) {
     const question = questions[i];
     const questionElement = document.createElement("div");
-    const questionText = document.createTextNode(question.question);
+
+    const questionText = document.createElement("p");
+    questionText.textContent = question.question;
     questionElement.appendChild(questionText);
+
     for (let j = 0; j < question.choices.length; j++) {
       const choice = question.choices[j];
+
       const choiceElement = document.createElement("input");
-      choiceElement.setAttribute("type", "radio");
-      choiceElement.setAttribute("name", `question-${i}`);
-      choiceElement.setAttribute("value", choice);
+      choiceElement.type = "radio";
+      choiceElement.name = `question-${i}`;
+      choiceElement.value = choice;
+
       if (userAnswers[i] === choice) {
-        choiceElement.setAttribute("checked", true);
+        choiceElement.checked = true;
       }
-      const choiceText = document.createTextNode(choice);
-      questionElement.appendChild(choiceElement);
-      questionElement.appendChild(choiceText);
+
+      choiceElement.addEventListener("change", () => {
+        saveAnswer(i, choice);
+      });
+
+      const label = document.createElement("label");
+      label.appendChild(choiceElement);
+      label.appendChild(document.createTextNode(choice));
+
+      questionElement.appendChild(label);
     }
+
     questionsElement.appendChild(questionElement);
   }
 }
+
 renderQuestions();
